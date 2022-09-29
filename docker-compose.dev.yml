@@ -30,8 +30,6 @@ services:
         container_name: ${PROJECT_NAME}-wordpress
         image: wordpress
         restart: always
-        ports:
-            - 8080:80
         env_file:
             - ./.env
         environment:
@@ -41,10 +39,12 @@ services:
             WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
         volumes:
             - ./wordpress/plugins:/var/www/html/wp-content/plugins
-            - ./wordpress/themes:/var/www/html/wp-content/themes
+            - ./wordpress/themes:/var/www/html/wp-content/themes:ro
             - ./wordpress/uploads:/var/www/html/wp-content/uploads
         depends_on:
             - db
+        ports:
+            - 8080:80
 
     db:
         container_name: ${PROJECT_NAME}-db
@@ -57,7 +57,7 @@ services:
             MYSQL_PASSWORD: ${MYSQL_PASSWORD}
             MYSQL_RANDOM_ROOT_PASSWORD: ${MYSQL_RANDOM_ROOT_PASSWORD}
         volumes:
-            - db:/var/lib/mysql
+            - ./db:/var/lib/mysql
 
 volumes:
     db:
