@@ -1,0 +1,64 @@
+version: "3.8"
+
+services:
+    nginx:
+        container_name: ${PROJECT_NAME}-nginx
+        image: nginx:latest
+        volumes:
+            - ./nginx/${NGINX_CONF_FOLDER_NAME}/:/etc/nginx/conf.d/:ro
+        ports:
+            - 80:80
+        depends_on:
+            - next
+            - wordpress
+
+    next:
+        container_name: ${PROJECT_NAME}-next
+        build:
+            context: ./next
+            dockerfile: ${DOCKERFILE_NAME}
+        volumes:
+            - ./next:/usr/src/app
+            - /usr/src/app/node_modules
+            - /usr/src/app/.next
+        ports:
+            - "3000:3000"
+        depends_on:
+            - wordpress
+
+    wordpress:
+        container_name: ${PROJECT_NAME}-wordpress
+        image: wordpress
+        restart: always
+        ports:
+            - 8080:80
+        env_file:
+            - ./.env
+        environment:
+            WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+            WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+            WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+            WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+        volumes:
+            - ./wordpress/plugins:/var/www/html/wp-content/plugins
+            - ./wordpress/themes:/var/www/html/wp-content/themes
+            - ./wordpress/uploads:/var/www/html/wp-content/uploads
+        depends_on:
+            - db
+
+    db:
+        container_name: ${PROJECT_NAME}-db
+        platform: linux/x86_64
+        image: mysql:5.7
+        restart: always
+        environment:
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_USER: ${MYSQL_USER}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+            MYSQL_RANDOM_ROOT_PASSWORD: ${MYSQL_RANDOM_ROOT_PASSWORD}
+        volumes:
+            - db:/var/lib/mysql
+
+volumes:
+    db:
+    wordpress:
