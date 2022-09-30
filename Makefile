@@ -5,5 +5,9 @@ dev:
 
 build:
 	docker compose -f ${FILE} up --build -d
+
 down:
 	docker compose -f ${FILE} down
+
+remove-db:
+	rm -rf ./db/*
