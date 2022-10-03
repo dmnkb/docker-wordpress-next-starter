@@ -5,18 +5,27 @@ services:
         container_name: ${PROJECT_NAME}-nginx
         image: nginx:latest
         volumes:
-            - ./nginx/conf.dev/:/etc/nginx/conf.d/:ro
+            - ./nginx/conf.prod/:/etc/nginx/conf.d/:ro
+            - /certbot/www:/var/www/certbot/
+            - /certbot/conf/:/etc/nginx/ssl/
         ports:
             - 80:80
+            - 443:443
         depends_on:
             - next
             - wordpress
+
+    certbot:
+        image: certbot/certbot:latest
+        volumes:
+            - /certbot/www/:/var/www/certbot/
+            - /certbot/conf/:/etc/letsencrypt/
 
     next:
         container_name: ${PROJECT_NAME}-next
         build:
             context: ./next
-            dockerfile: Dockerfile.dev
+            dockerfile: Dockerfile.prod
         volumes:
             - ./next:/usr/src/app
             - /usr/src/app/node_modules
@@ -61,7 +70,7 @@ services:
             MYSQL_PASSWORD: ${MYSQL_PASSWORD}
             MYSQL_RANDOM_ROOT_PASSWORD: ${MYSQL_RANDOM_ROOT_PASSWORD}
         volumes:
-            - ./db:/var/lib/mysql
+            - /db:/var/lib/mysql
 
 volumes:
     db:
